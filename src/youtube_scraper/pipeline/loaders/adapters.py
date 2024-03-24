@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from operator import itemgetter
-from typing import Any
+from typing import Any, Generator
 
 from psycopg.connection import Connection
 
@@ -35,7 +35,7 @@ class CommentsRepository(IPostgresRepository):
             self.db_conn.commit()
             cursor.close()
 
-    def add_many(self, comments: list[dict[str, str]], url_id: str) -> None:
+    def add_many(self, comments: Generator[dict[str, str | bool | float], Any, None], url_id: str) -> None:
         statement = "COPY comments (comment, cid, likes, video_id) FROM STDIN"
         field_getter = itemgetter("text", "cid", "votes")
         with self.db_conn.cursor().copy(statement) as copy:

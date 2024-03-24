@@ -1,77 +1,53 @@
-import json
 import logging
 import time
 from itertools import islice
 from multiprocessing import Pool
-from operator import itemgetter
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import psycopg
 from youtube_comment_downloader import YoutubeCommentDownloader
+
+from youtube_scraper.pipeline.loaders.adapters import CommentsRepository
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 MAX_COMMENTS = 5000
-root_path = Path(__file__).parent.parent
+root_path = Path(__file__).parent.parent.parent
 data_dir = root_path.joinpath("data_2")
+
+db = "postgres"
+user = "admin"
+password = "admin"
+port = "5432"
+connection_str = f"dbname={db} user={user} password={password} port={port}"
 
 
 def method_to_map_in_the_pool(url: str) -> Any:
-    comment_desired_fiels = ["text", "cid", "votes"]
-    field_getter = itemgetter(*comment_desired_fiels)
-
-    downloader = YoutubeCommentDownloader()
-    comments = downloader.get_comments_from_url(youtube_url=url)
-    url_id = url.split("=")[-1].strip()
-    path_to_file = data_dir.joinpath(f"{url_id}.json")
-
-    logger.info(f"Empezamos a parsear comentarios de {url}")
-    clean_comments = [
-        dict(zip(comment_desired_fiels, field_getter(comment)))
-        for comment in islice(comments, MAX_COMMENTS)
-    ]
-    parsed_comments = json.dumps(clean_comments)
-    logger.info(f"Comentarios parseados para: {url}!!")
-
-    with open(path_to_file, "w", encoding="utf-8") as f:
-        logger.info(f"Escribiendo comentarios de {url_id}")
-        f.write(parsed_comments)
-        logger.info(f"Acabado comentarios de {url_id}")
-
-
-def method_to_map_in_the_pool__parse_as_we_go(url: str) -> Any:
-    comment_desired_fiels = ["text", "cid", "votes"]
-    field_getter = itemgetter(*comment_desired_fiels)
     downloader = YoutubeCommentDownloader()
     url_id = url.split("=")[-1].strip()
-    path_to_file = data_dir.joinpath(f"{url_id}.json")
 
+    logger.info(f"Empezando a descargar para {url_id}")
     comments = downloader.get_comments_from_url(youtube_url=url)
+    logger.info(f"Descarga terminada para {url_id}")
 
-    logger.info(f"Escribiendo comentarios de {url_id}")
-    with open(path_to_file, "w", encoding="utf-8") as f:
-        f.write("[")
-        is_first = True
-
-        for comment in comments:
-            if not is_first:
-                f.write(",")
-            else:
-                is_first = False
-            fields = field_getter(comment)
-            clean_comment = {key: fields[idx] for idx, key in enumerate(comment_desired_fiels)}
-            json.dump(clean_comment, f)
-        f.write("]")
-        logger.info(f"Acabado comentarios de {url_id}")
+    with psycopg.connect(connection_str) as db_conn:
+        comments_repo = CommentsRepository(db_conn=db_conn)
+        logger.info(f"Empezando a escribir en BBDD para {url_id}")
+        comments_repo.add_many(
+            comments=islice(comments, MAX_COMMENTS),
+            url_id=url_id
+        )
+        db_conn.commit()
+        logger.info(f"Terminado de escribir en BBDD para {url_id}")
 
 
 if __name__ == "__main__":
     songs_data = pd.read_csv(root_path.joinpath("song_info_with_youtube.csv"))
     songs_data = songs_data.dropna()
-    links = songs_data["YouTube Link"].tolist()
-    downloader = YoutubeCommentDownloader()
+    links = songs_data["YouTube Link"].tolist()[:5]
     initial_time = time.time()
     with Pool() as process_pool:
         process_pool.map(method_to_map_in_the_pool, links)
