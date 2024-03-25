@@ -47,7 +47,7 @@ def method_to_map_in_the_pool(url: str) -> Any:
 if __name__ == "__main__":
     songs_data = pd.read_csv(root_path.joinpath("song_info_with_youtube.csv"))
     songs_data = songs_data.dropna()
-    links = songs_data["YouTube Link"].tolist()[:5]
+    links = songs_data["YouTube Link"].tolist()
     initial_time = time.time()
     with Pool() as process_pool:
         process_pool.map(method_to_map_in_the_pool, links)
