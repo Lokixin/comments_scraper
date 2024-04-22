@@ -223,6 +223,20 @@ files = [
 ]
 
 [[package]]
+name = "kafka-python"
+version = "2.0.2"
+description = "Pure Python client for Apache Kafka"
+optional = false
+python-versions = "*"
+files = [
+    {file = "kafka-python-2.0.2.tar.gz", hash = "sha256:04dfe7fea2b63726cd6f3e79a2d86e709d608d74406638c5da33a01d45a9d7e3"},
+    {file = "kafka_python-2.0.2-py2.py3-none-any.whl", hash = "sha256:2d92418c7cb1c298fa6c7f0fb3519b520d0d7526ac6cb7ae2a4fc65a51a94b6e"},
+]
+
+[package.extras]
+crc32c = ["crc32c"]
+
+[[package]]
 name = "mypy"
 version = "1.8.0"
 description = "Optional static typing for Python"
@@ -748,13 +762,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "youtube-comment-downloader"
-version = "0.1.70"
+version = "0.1.72"
 description = "Simple script for downloading Youtube comments without using the Youtube API"
 optional = false
 python-versions = "*"
 files = [
-    {file = "youtube-comment-downloader-0.1.70.tar.gz", hash = "sha256:9fcf3d2000dc2a9fc03c1040fb7fe29840607b19892a7e7e1b44c0e1039f9f87"},
-    {file = "youtube_comment_downloader-0.1.70-py3-none-any.whl", hash = "sha256:3586586229f58625f656dcd1579e6ae909784c615b3c573fcb34804723f47fc1"},
+    {file = "youtube-comment-downloader-0.1.72.tar.gz", hash = "sha256:501526d71dda0f4672dc45d12ebc524aa7f0815fa12a57426635ee13e3d9474c"},
+    {file = "youtube_comment_downloader-0.1.72-py3-none-any.whl", hash = "sha256:7e36f1e5aaef7ac8921c4e923ed34783380e4041a36685eea0592b5e30319ce1"},
 ]
 
 [package.dependencies]
@@ -764,4 +778,4 @@ requests = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "db14bd44c7bcf51a38a9e55c66f43f9671f82ac2a60494a59064cf088be09455"
+content-hash = "5f56010c172f0cef621b1ec077f60091df93052dd473815dc8ea1817e288c4b9"
